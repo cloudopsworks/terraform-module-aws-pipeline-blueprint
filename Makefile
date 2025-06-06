@@ -1,28 +1,32 @@
-##
-# (c) 2023 - Cloud Ops Works LLC - https://cloudops.works/
-#            On GitHub: https://github.com/cloudopsworks
-#            Distributed Under Apache v2.0 License
-#
+SHELL := /bin/bash
 TRONADOR_AUTO_INIT := true
 GITVERSION ?= $(INSTALL_PATH)/gitversion
+define PROVIDER_CHOMP
+provider "aws" {
+  alias = "default"
+}
+provider "aws" {
+  alias = "account"
+}
+endef
+export PROVIDER_CHOMP
+
+# List of targets the `readme` target should call before generating the readme
+export README_DEPS ?= docs/targets.md docs/terraform.md
 
 -include $(shell curl -sSL -o .tronador "https://cowk.io/acc"; echo .tronador)
 
-BOILERPLATE := $(INSTALL_PATH)/boilerplate
-ifneq (,$(wildcard .inputs))
-    PARAMS1 := --var-file=.inputs
-endif
-ifneq (,$(wildcard .inputs_mod))
-	PARAMS2 := --var-file=.inputs_mod
-endif
-ifneq (,$(wildcard .github/.inputs_cicd))
-	PARAMS3 := --var-file=.github/.inputs_cicd
-endif
-USER_VARS ?=
+temp_provider:
+	echo "$$PROVIDER_CHOMP" > provider.temp.tf
 
-## Lint terragrunt modules
-lint:
-	@$(SELF) terragrunt/install terragrunt/get-modules terragrunt/get-plugins terragrunt/lint terragrunt/validate
+## Lint terraform/opentofu code
+lint: temp_provider
+	$(SELF) tofu/install tofu/get-modules tofu/get-plugins tofu/lint tofu/validate
+
+# Format terraform/opentofu code
+fmt:
+	$(SELF) tofu/install tofu/fmt
+
 
 get_version: packages/install/gitversion
 	$(call assert-set,GITVERSION)
@@ -43,18 +47,3 @@ tag:: tag_local
 	git push origin -f $(VER_MAJOR).$(VER_MINOR)
 	git push origin -f $(VER_MAJOR)
 	git checkout develop
-
-## Cleanup terragrunt caches from the Project
-clean::
-	@find . -name 'tfplan.out' -type f -exec rm -rf {} \;
-	@find . -name '*.tfplan' -type f -exec rm -rf {} \;
-	@find . -name '.terraform.lock.hcl' -type f -exec rm -rf {} \;
-	@find . -name '.terragrunt-cache' -type d -exec rm -rf {} \;
-
-## Initialize the project with boilerplate
-init/project:: packages/install/boilerplate
-	@$(BOILERPLATE) --template-url .cloudopsworks/boilerplate/main --output-folder . $(USER_VARS) $(PARAMS1) $(PARAMS2) $(PARAMS3) --var=iac_project=$(shell basename $$(pwd)) --disable-dependency-prompt
-
-## Cleanup project boilerplate cache
-clean/project::
-	@rm -f .inputs .inputs_mod .github/.inputs_cicd

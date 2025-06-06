@@ -1,6 +1,0 @@
-#
-org:
-  organization_name: "SampleOrg"
-  organization_unit: "Network"
-  environment_type: "Prod"
-  environment_name: "Hub"
