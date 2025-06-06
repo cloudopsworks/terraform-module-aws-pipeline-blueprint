@@ -1,0 +1,230 @@
+# (c) 2023 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Terragrunt Project Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: string
+        description: 'The action to perfotm: plan/apply/destroy'
+        required: true
+        default: 'apply'
+      environment:
+        type: environment
+        description: 'The environment to deploy'
+        required: true
+      working_directory:
+        type: choice
+        description: 'The working directory to use'
+        required: true
+        default: '.'
+        options:
+          - .
+concurrency:
+  group: plan-deploy-${{ github.repository }}
+  cancel-in-progress: false
+permissions:
+  contents: write
+  packages: write
+  statuses: write
+  pull-requests: write
+  issues: write
+  checks: write
+env:
+  tofu_version: 1.7.7
+  tg_version: 0.76.3
+jobs:
+  preload:
+    outputs:
+      runner_set: ${{ steps.local_runner_set.outputs.result == '' && steps.runner_set.outputs.result || steps.local_runner_set.outputs.result }}
+    #if: ${{ startsWith(github.ref,'refs/heads/release/') || startsWith(github.ref,'refs/heads/develop') || startsWith(github.ref,'refs/heads/support/') || startsWith(github.ref,'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      # Get the owner repo
+      - name: Get owner
+        id: getowner
+        run: |
+          repo_owner=`echo "$GITHUB_REPOSITORY" | cut -f 1 -d "/"`
+          repo_name=`echo "$GITHUB_REPOSITORY" | cut -f 2 -d "/"`
+          echo "owner=$repo_owner" >> $GITHUB_OUTPUT
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+      - name: Validate Sync with main branch
+        run: |
+          main_branch=$(git branch -r --format "%(refname:short)" | grep origin | egrep "master|main" | sed -e 's/origin\///')
+          if [ -z "$main_branch" ]; then
+            echo "Main branch not found"
+            exit 1
+          fi
+          git fetch origin $main_branch
+          git checkout $main_branch
+          git switch -
+          commits_behind=$(git rev-list --count HEAD..$main_branch)
+          commits_ahead=$(git rev-list --count $main_branch..HEAD)
+          if [ $commits_behind -gt 0 ]; then
+            echo "Current branch is $commits_behind commits behind $main_branch"
+            exit 1
+          else
+            echo "Current branch is ahead $commits_ahead commits from $main_branch"
+          fi
+
+      - name: Determine if the file inputs.yaml exists on the inputs.working_directory
+        id: check_file
+        run: |
+          if [ -f "${{ inputs.working_directory }}/inputs.yaml" ]; then
+            echo "file_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "file_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Local runner set, get runner set from inputs.yaml located in the inputs.working_directory, only if the file exists
+        id: local_runner_set
+        if: ${{ steps.check_file.outputs.file_exists == 'true' }}
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.runner_set // ""' ${{ inputs.working_directory }}/inputs.yaml
+
+      - name: Get runnerset with yq from global-inputs.yaml
+        id: runner_set
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.runner_set // "ubuntu-latest"' ./global-inputs.yaml
+  plan:
+    needs:
+      - preload
+    runs-on: ${{ needs.preload.outputs.runner_set }}
+    steps:
+      - name: Install runner-tools
+        uses: cloudopsworks/blueprints/ci/common/install/runner-tools@v5.9
+      # Get the owner repo
+      - name: Get owner
+        id: getowner
+        run: |
+          repo_owner=`echo "$GITHUB_REPOSITORY" | cut -f 1 -d "/"`
+          repo_name=`echo "$GITHUB_REPOSITORY" | cut -f 2 -d "/"`
+          echo "owner=$repo_owner" >> $GITHUB_OUTPUT
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+      - name: Get the deployments configuration
+        id: deploy_conf
+        run: |
+          result=$(yq -o=json -I=0 '.cd.deployments' .github/cloudopsworks-ci.yaml)
+          echo "result=$result" >> $GITHUB_OUTPUT
+      - name: Setup OpenTofu
+        id: setup_opentofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.tofu_version }}
+          tofu_wrapper: false
+      - name: Setup Terragrunt v${{ env.tg_version }}
+        run: |
+          sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.tg_version }}/terragrunt_linux_amd64"
+          sudo chmod +x /bin/terragrunt
+          terragrunt -v
+      - name: Terragrunt Check Updated Module Version and Report
+        id: check_version
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.DEPLOYMENT_AZURE_SERVICE_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.DEPLOYMENT_AZURE_SERVICE_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.DEPLOYMENT_AZURE_TENANT_ID }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        shell: bash
+        run: |
+          .cloudopsworks/hooks/module_versions.sh --path ${{ inputs.working_directory }} --report-ghaction
+      - name: Terragrunt plan ${{ inputs.working_directory }}
+        id: plan
+        #continue-on-error: ${{ steps.check_automatic.output.result != 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.DEPLOYMENT_AZURE_SERVICE_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.DEPLOYMENT_AZURE_SERVICE_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.DEPLOYMENT_AZURE_TENANT_ID }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        working-directory: ${{ inputs.working_directory }}
+        run: |
+          terragrunt --non-interactive run-all plan -input=false ${{ inputs.action == 'destroy' && '-destroy' || '' }} --out-dir ${{ github.workspace }}/${{ inputs.working_directory }}/.tfplans
+          exit_code=$?
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
+      - name: Upload Plan files
+        uses: actions/upload-artifact@v4
+        with:
+          name: environment-release-plan
+          include-hidden-files: true
+          path: |
+            .placeholder
+            **/tfplan.tfplan
+            **/tfplan.out
+  deploy:
+    needs:
+      - preload
+      - plan
+    runs-on: ${{ needs.preload.outputs.runner_set }}
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Install runner-tools
+        uses: cloudopsworks/blueprints/ci/common/install/runner-tools@v5.9
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: environment-release-plan
+          path: .
+          merge-multiple: true
+      - name: Terraform Plan prettifier
+        uses: kishaningithub/setup-tf-summarize@v2
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          tf-summarize-version: v0.3.10
+      - name: Setup OpenTofu
+        id: setup_opentofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.tofu_version }}
+          tofu_wrapper: false
+      - name: Setup Terragrunt v${{ env.tg_version }}
+        run: |
+          sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.tg_version }}/terragrunt_linux_amd64"
+          sudo chmod +x /bin/terragrunt
+          terragrunt -v
+      - name: Terragrunt ${{ inputs.action }} ${{ inputs.working_directory }}
+        id: apply
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOYMENT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOYMENT_AWS_SECRET_ACCESS_KEY }}
+          ARM_CLIENT_ID: ${{ secrets.DEPLOYMENT_AZURE_SERVICE_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.DEPLOYMENT_AZURE_SERVICE_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.DEPLOYMENT_AZURE_TENANT_ID }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        working-directory: ${{ inputs.working_directory }}
+        run: |
+          terragrunt --non-interactive run-all ${{ inputs.action == 'destroy' && 'apply' || inputs.action }} --out-dir ${{ github.workspace }}/${{ inputs.working_directory }}/.tfplans
+          exit_code=$?
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
+      # Create a VERSION file to use through the build
+      - name: Set Version File
+        env:
+          NEXT_VERSION: "${{ github.ref_name }}"
+        run: |
+          echo -n "$NEXT_VERSION" > VERSION
