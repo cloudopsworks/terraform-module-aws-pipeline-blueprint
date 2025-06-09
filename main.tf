@@ -27,22 +27,13 @@ data "aws_s3_bucket" "apidepoy_bucket" {
 }
 
 data "aws_s3_bucket" "beanstalk_bucket" {
-  count  = var.beanstalk_bucket_name != "" ? 1 : 0
-  bucket = var.beanstalk_bucket_name
+  count  = var.beanstalk.bucket_name != "" ? 1 : 0
+  bucket = var.beanstalk.bucket_name
 }
 
 data "aws_iam_role" "beanstalk_service_role" {
-  count = var.beanstalk_service_role_name != "" ? 1 : 0
-  name  = var.beanstalk_service_role_name
-}
-
-data "aws_iam_role" "argocd_role" {
-  name = var.argocd_role_name
-}
-
-data "aws_iam_role" "dns_manager_role" {
-  count = var.dns_manager_role_name != "" ? 1 : 0
-  name  = var.dns_manager_role_name
+  count = var.beanstalk.service_role_name != "" ? 1 : 0
+  name  = var.beanstalk.service_role_name
 }
 
 data "aws_eks_cluster" "eks_cluster" {
@@ -61,7 +52,7 @@ data "aws_s3_bucket" "ssm_session_manager_logs_bucket" {
 }
 
 module "blueprint" {
-  source               = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git//?ref=v1.0.5"
+  source               = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git//?ref=v1.0.6"
   is_hub               = var.is_hub
   spoke_def            = var.spoke_def
   org                  = var.org

@@ -34,28 +34,33 @@ variable "apideploy_bucket_name" {
   default     = ""
 }
 
-variable "beanstalk_bucket_name" {
-  description = "The name of the S3 bucket for Elastic Beanstalk"
-  type        = string
-  default     = ""
+variable "beanstalk" {
+  description = "Elastic Beanstalk configuration"
+  type = object({
+    bucket_name       = optional(string, "")
+    service_role_name = optional(string, "aws-elasticbeanstalk-service-role")
+  })
+  default = {}
 }
 
-variable "beanstalk_service_role_name" {
-  description = "The name of the Elastic Beanstalk service role"
-  type        = string
-  default     = "aws-elasticbeanstalk-service-role"
+variable "argocd" {
+  description = "ArgoCD configuration"
+  type = object({
+    namespace                      = optional(string, "argocd")
+    controller_serviceaccount_name = optional(string, "argocd-application-controller")
+    server_serviceaccount_name     = optional(string, "argocd-server")
+    role_arns                      = optional(list(string), [])
+  })
+  default = {}
 }
 
-variable "argocd_role_name" {
-  description = "The name of the ArgoCD IAM role"
-  type        = string
-  default     = ""
-}
-
-variable "dns_manager_role_name" {
-  description = "The name of the DNS manager IAM role"
-  type        = string
-  default     = ""
+variable "dns_manager" {
+  description = "DNS Manager configuration"
+  type = object({
+    enabled   = optional(bool, false)
+    role_arns = optional(list(string), [])
+  })
+  default = {}
 }
 
 variable "ssm_session_manager_logs_bucket_name" {

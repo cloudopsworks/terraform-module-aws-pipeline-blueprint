@@ -308,173 +308,6 @@ locals {
       ]
     },
   ] : []
-  beanstalk_publisher_role = var.beanstalk_bucket_name != "" && var.beanstalk_service_role_name != "" ? [
-    {
-      name_prefix = "beanstalk-pub-with-apigw"
-      description = "Beanstalk Publisher w/ApiGateway Deployment Role"
-      assume_roles = [
-        {
-          actions = [
-            "sts:AssumeRoleWithWebIdentity",
-            "sts:AssumeRoleWithSAML",
-            "sts:AssumeRole",
-            "sts:SetContext",
-            "sts:SetSourceIdentity",
-            "sts:TagSession",
-          ]
-          principals = [
-            data.aws_iam_user.terraform_user.arn,
-          ]
-          type = "AWS"
-        },
-      ]
-      inline_policies = [
-        {
-          name = "beanstalk-route53-deploy"
-          statements = [
-            {
-              actions = [
-                "route53:GetChange",
-                "route53:ListHostedZones",
-                "route53:GetHostedZone",
-                "route53:ChangeResourceRecordSets",
-                "route53:ListResourceRecordSets",
-                "route53:ListTagsForResource",
-                "route53:ChangeTagsForResource",
-              ]
-              effect = "Allow"
-              resources = [
-                "*",
-              ]
-              sid = "Route53"
-            },
-            {
-              actions = [
-                "elasticloadbalancing:Describe*",
-                "elasticloadbalancing:CreateLoadBalancer",
-                "elasticloadbalancing:DeleteLoadBalancer",
-                "elasticloadbalancing:ModifyLoadBalancerAttributes",
-                "elasticloadbalancing:AddTags",
-                "elasticloadbalancing:RemoveTags",
-                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-              ]
-              effect = "Allow"
-              resources = [
-                "*",
-              ]
-              sid = "ELB"
-            },
-          ]
-        },
-        {
-          name = "beanstalk-s3-version"
-          statements = [
-            {
-              actions = [
-                "s3:PutObjectVersionTagging",
-                "s3:PutObjectVersionAcl",
-                "s3:PutObjectAcl",
-                "s3:PutObject",
-                "s3:List*",
-                "s3:Get*",
-                "s3:DeleteObjectVersionTagging",
-                "s3:DeleteObjectVersion",
-                "s3:DeleteObject",
-                "s3:PutObjectTagging",
-                "s3:PutBucketTagging",
-                "s3:DeleteObjectTagging",
-                "s3:TagResource",
-                "s3:UntagResource",
-              ]
-              effect = "Allow"
-              resources = [
-                data.aws_s3_bucket.beanstalk_bucket[0].arn,
-                "${data.aws_s3_bucket.beanstalk_bucket[0].arn}/*",
-              ]
-              sid = "S3Bucket"
-            },
-            {
-              actions = [
-                "s3:ListAllMyBuckets",
-              ]
-              effect = "Allow"
-              resources = [
-                "*",
-              ]
-              sid = "ListAllBuckets"
-            },
-          ]
-        },
-        {
-          name = "beanstalk-iam"
-          statements = [
-            {
-              actions = [
-                "iam:CreateRole",
-                "iam:PutRolePolicy",
-                "iam:AttachRolePolicy",
-                "iam:CreateInstanceProfile",
-                "iam:AddRoleToInstanceProfile",
-              ]
-              effect = "Allow"
-              resources = [
-                "*",
-              ]
-              sid = "IAM"
-            },
-            {
-              actions = [
-                "iam:PassRole",
-              ]
-              effect = "Allow"
-              resources = [
-                data.aws_iam_role.beanstalk_service_role[0].arn,
-              ]
-              sid = "PassRole"
-            },
-          ]
-        },
-        {
-          name = "beanstalk-clouwatch-rw"
-          statements = [
-            {
-              actions = [
-                "cloudwatch:PutMetricAlarm",
-                "cloudwatch:DeleteAlarms",
-                "cloudwatch:Describe*",
-                "cloudwatch:Get*",
-                "cloudwatch:List*",
-                "logs:CreateLogGroup",
-                "logs:DeleteLogGroup",
-                "logs:DescribeLogGroups",
-                "logs:PutRetentionPolicy",
-                "logs:DeleteRetentionPolicy",
-                "logs:ListTagsLogGroup",
-                "logs:TagLogGroup",
-                "logs:UntagLogGroup",
-                "logs:ListTagsForResource",
-              ]
-              effect = "Allow"
-              resources = [
-                "arn:aws:cloudwatch:*:${data.aws_caller_identity.current.account_id}:alarm:*",
-                "arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group:*",
-                "arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group",
-              ]
-              sid = "CloudWatch"
-            },
-          ]
-        },
-      ]
-      "managed_policies" = [
-        "arn:aws:iam::aws:policy/AdministratorAccess-AWSElasticBeanstalk",
-      ]
-      "policy_refs" = [
-        "api-gateway-deployer",
-        "build-deploy-secrets-user",
-      ]
-    },
-  ] : []
   build_publisher_role = [
     {
       name_prefix = "build-publisher"
@@ -548,45 +381,6 @@ locals {
       ]
     },
   ]
-  argocd_management_role = var.eks_cluster_name != "" ? [
-    {
-      name_prefix = "argocd"
-      description = "ArgoCD Management Role"
-      assume_roles = [
-        {
-          actions = [
-            "sts:SetContext",
-            "sts:SetSourceIdentity",
-            "sts:TagSession",
-            "sts:AssumeRole",
-            "sts:AssumeRoleWithWebIdentity",
-          ]
-          principals = [
-            data.aws_iam_role.argocd_role.arn,
-          ]
-          type = "AWS"
-        },
-      ]
-      inline_policies = [
-        {
-          name = "argocd-management-eks-read-only"
-          statements = [
-            {
-              actions = [
-                "eks:DescribeCluster",
-                "eks:ListClusters",
-              ]
-              effect = "Allow"
-              resources = [
-                "*",
-              ]
-              sid = "ArgoCDManagementEKSReadOnly"
-            },
-          ]
-        },
-      ]
-    },
-  ] : []
   hoopagent_role = var.eks_cluster_name != "" ? [
     {
       name_prefix = "hoopagent"
@@ -596,20 +390,20 @@ locals {
           actions = [
             "sts:AssumeRoleWithWebIdentity",
           ]
-          "conditions" = [
+          conditions = [
             {
               test = "StringEquals"
               values = [
                 "system:serviceaccount:hoopagent:hoopagent",
               ]
-              "variable" = "${data.aws_iam_openid_connect_provider.eks_cluster[0].client_id_list[0]}:sub"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].client_id_list[0]}:sub"
             },
             {
               test = "StringEquals"
               values = [
                 "sts.amazonaws.com",
               ]
-              "variable" = "${data.aws_iam_openid_connect_provider.eks_cluster[0].client_id_list[0]}:aud"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].client_id_list[0]}:aud"
             },
           ]
           principals = [
@@ -858,11 +652,13 @@ locals {
   blueprint_roles = concat(
     local.preview_role,
     local.eks_publisher_role,
+    local.argocd_management_role_hub,
     local.argocd_management_role,
     local.hoopagent_role,
     local.lambda_publisher_role,
     local.beanstalk_publisher_role,
     local.build_publisher_role,
+    local.dns_manager_role,
     local.dms_role
   )
 }

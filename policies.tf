@@ -186,7 +186,24 @@ locals {
       ]
     },
   ] : []
-  allow_dns = var.dns_manager_role_name != "" ? [
+  allow_dns = (length(var.dns_manager.role_arns) > 0 && !var.is_hub) ? [
+    {
+      description = "Allow AssumeRole to DNS Manager in main account"
+      name_prefix = "allow-dns-manager"
+      statements = [
+        {
+          actions = [
+            "sts:AssumeRole",
+            "sts:TagSession",
+          ]
+          effect    = "Allow"
+          resources = var.dns_manager.role_arns
+          sid       = "AllowAssumeRole"
+        },
+      ]
+    },
+  ] : []
+  allow_dns_hub = var.is_hub && var.dns_manager.enabled ? [
     {
       description = "Allow AssumeRole to DNS Manager in main account"
       name_prefix = "allow-dns-manager"
@@ -197,8 +214,8 @@ locals {
             "sts:TagSession",
           ]
           effect = "Allow"
-          resources = [
-            data.aws_iam_role.dns_manager_role[0].arn,
+          resource_refs = [
+            "dns-manager"
           ]
           sid = "AllowAssumeRole"
         },
