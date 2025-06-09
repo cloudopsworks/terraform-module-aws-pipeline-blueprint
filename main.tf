@@ -17,6 +17,7 @@ data "aws_iam_user" "build_publisher" {
 }
 
 data "aws_s3_bucket" "lambda_bucket" {
+  count  = var.lambda_bucket_name != "" ? 1 : 0
   bucket = var.lambda_bucket_name
 }
 
@@ -26,11 +27,13 @@ data "aws_s3_bucket" "apidepoy_bucket" {
 }
 
 data "aws_s3_bucket" "beanstalk_bucket" {
+  count  = var.beanstalk_bucket_name != "" ? 1 : 0
   bucket = var.beanstalk_bucket_name
 }
 
 data "aws_iam_role" "beanstalk_service_role" {
-  name = var.beanstalk_service_role_name
+  count = var.beanstalk_service_role_name != "" ? 1 : 0
+  name  = var.beanstalk_service_role_name
 }
 
 data "aws_iam_role" "argocd_role" {

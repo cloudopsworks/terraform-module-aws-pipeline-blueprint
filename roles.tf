@@ -103,7 +103,7 @@ locals {
       ]
     },
   ] : []
-  lambda_publisher_role = [
+  lambda_publisher_role = var.lambda_bucket_name != "" ? [
     {
       name_prefix = "lambda-pub-with-apigw"
       description = "Lambda Publisher w/ApiGateway Deployment Role"
@@ -257,8 +257,8 @@ locals {
               ]
               effect = "Allow"
               resources = [
-                data.aws_s3_bucket.lambda_bucket.arn,
-                "${data.aws_s3_bucket.lambda_bucket.arn}/*",
+                data.aws_s3_bucket.lambda_bucket[0].arn,
+                "${data.aws_s3_bucket.lambda_bucket[0].arn}/*",
               ]
               sid = "S3PackageDeploy"
             },
@@ -302,13 +302,13 @@ locals {
           ]
         },
       ]
-      "policy_refs" = [
+      policy_refs = [
         "api-gateway-deployer",
         "build-deploy-secrets-user",
       ]
     },
-  ]
-  beanstalk_publisher_role = [
+  ] : []
+  beanstalk_publisher_role = var.beanstalk_bucket_name != "" && var.beanstalk_service_role_name != "" ? [
     {
       name_prefix = "beanstalk-pub-with-apigw"
       description = "Beanstalk Publisher w/ApiGateway Deployment Role"
@@ -389,8 +389,8 @@ locals {
               ]
               effect = "Allow"
               resources = [
-                data.aws_s3_bucket.beanstalk_bucket.arn,
-                "${data.aws_s3_bucket.beanstalk_bucket.arn}/*",
+                data.aws_s3_bucket.beanstalk_bucket[0].arn,
+                "${data.aws_s3_bucket.beanstalk_bucket[0].arn}/*",
               ]
               sid = "S3Bucket"
             },
@@ -429,7 +429,7 @@ locals {
               ]
               effect = "Allow"
               resources = [
-                data.aws_iam_role.beanstalk_service_role.arn,
+                data.aws_iam_role.beanstalk_service_role[0].arn,
               ]
               sid = "PassRole"
             },
@@ -474,7 +474,7 @@ locals {
         "build-deploy-secrets-user",
       ]
     },
-  ]
+  ] : []
   build_publisher_role = [
     {
       name_prefix = "build-publisher"
