@@ -57,7 +57,7 @@ locals {
       ]
     },
   ]
-  eks_publisher_role = [
+  eks_publisher_role = var.eks_cluster_name != "" ? [
     {
       name_prefix = "eks-pub-with-apigw"
       description = "EKS Main Publisher w/ApiGateway Deployment Role"
@@ -97,12 +97,12 @@ locals {
           ]
         },
       ]
-      "policy_refs" = [
+      policy_refs = [
         "api-gateway-deployer",
         "build-deploy-secrets-user",
       ]
     },
-  ]
+  ] : []
   lambda_publisher_role = [
     {
       name_prefix = "lambda-pub-with-apigw"
@@ -308,7 +308,7 @@ locals {
       ]
     },
   ]
-  beanstalp_publisher_role = [
+  beanstalk_publisher_role = [
     {
       name_prefix = "beanstalk-pub-with-apigw"
       description = "Beanstalk Publisher w/ApiGateway Deployment Role"
@@ -548,7 +548,7 @@ locals {
       ]
     },
   ]
-  argocd_management_role = [
+  argocd_management_role = var.eks_cluster_name != "" ? [
     {
       name_prefix = "argocd"
       description = "ArgoCD Management Role"
@@ -586,8 +586,8 @@ locals {
         },
       ]
     },
-  ]
-  hoopagent_role = [
+  ] : []
+  hoopagent_role = var.eks_cluster_name != "" ? [
     {
       name_prefix = "hoopagent"
       description = "HoopAgent EKS ServiceAccount Role"
@@ -639,7 +639,7 @@ locals {
         },
       ]
     },
-  ]
+  ] : []
   dms_role = var.dms_enabled ? [
     {
       name_prefix = "dms-secrets-reader"
@@ -858,11 +858,11 @@ locals {
   blueprint_roles = concat(
     local.preview_role,
     local.eks_publisher_role,
-    local.lambda_publisher_role,
-    local.beanstalp_publisher_role,
-    local.build_publisher_role,
     local.argocd_management_role,
     local.hoopagent_role,
+    local.lambda_publisher_role,
+    local.beanstalk_publisher_role,
+    local.build_publisher_role,
     local.dms_role
   )
 }
