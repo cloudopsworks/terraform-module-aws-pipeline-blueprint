@@ -5,7 +5,7 @@
 #
 
 locals {
-  ssm_encryption_policy = var.ssm_session_manager_logs_bucket_name != "" ? [
+  ssm_encryption_policy = var.ssm_session_manager.logs_bucket_name != "" ? [
     {
       name_prefix = "allow-ssm-encryption"
       description = "Allow SSM Session Manager Encryption"
@@ -19,7 +19,7 @@ locals {
           ]
           effect = "Allow"
           resources = [
-            var.ssm_session_manager_kms_key_arn,
+            var.ssm_session_manager.kms_key_arn,
           ]
         },
         {

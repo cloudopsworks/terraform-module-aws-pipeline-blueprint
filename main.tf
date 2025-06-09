@@ -32,7 +32,7 @@ data "aws_s3_bucket" "beanstalk_bucket" {
 }
 
 data "aws_iam_role" "beanstalk_service_role" {
-  count = var.beanstalk.service_role_name != "" ? 1 : 0
+  count = var.beanstalk.bucket_name != "" && var.beanstalk.service_role_name != "" ? 1 : 0
   name  = var.beanstalk.service_role_name
 }
 
@@ -47,8 +47,8 @@ data "aws_iam_openid_connect_provider" "eks_cluster" {
 }
 
 data "aws_s3_bucket" "ssm_session_manager_logs_bucket" {
-  count  = var.ssm_session_manager_logs_bucket_name != "" ? 1 : 0
-  bucket = var.ssm_session_manager_logs_bucket_name
+  count  = var.ssm_session_manager.logs_bucket_name != "" ? 1 : 0
+  bucket = var.ssm_session_manager.logs_bucket_name
 }
 
 module "blueprint" {

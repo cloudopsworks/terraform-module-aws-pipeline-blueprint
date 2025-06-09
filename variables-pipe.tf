@@ -63,16 +63,16 @@ variable "dns_manager" {
   default = {}
 }
 
-variable "ssm_session_manager_logs_bucket_name" {
-  description = "The name of the S3 bucket for SSM Session Manager logs"
-  type        = string
-  default     = ""
-}
-
-variable "ssm_session_manager_kms_key_arn" {
-  description = "The ARN of the KMS key for SSM Session Manager encryption"
-  type        = string
-  default     = ""
+variable "ssm_session_manager" {
+  description = "SSM Session Manager configuration"
+  type = object({
+    logs_bucket_name = optional(string, "")
+    kms_key_arn      = optional(string, "")
+  })
+  default = {
+    logs_bucket_name = ""
+    kms_key_arn      = ""
+  }
 }
 
 variable "dms_enabled" {
