@@ -21,8 +21,8 @@ data "aws_s3_bucket" "lambda_bucket" {
 }
 
 data "aws_s3_bucket" "apidepoy_bucket" {
-  count  = var.lambda_apideploy_bucket_name != "" ? 1 : 0
-  bucket = var.lambda_apideploy_bucket_name
+  count  = var.apideploy_bucket_name != "" ? 1 : 0
+  bucket = var.apideploy_bucket_name
 }
 
 data "aws_s3_bucket" "beanstalk_bucket" {

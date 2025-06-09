@@ -82,7 +82,7 @@ locals {
           sid = "IAMRead"
         },
         ],
-        var.lambda_apideploy_bucket_name != "" ? [
+        var.apideploy_bucket_name != "" ? [
           {
             actions = [
               "s3:PutObject",

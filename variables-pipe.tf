@@ -28,7 +28,7 @@ variable "lambda_bucket_name" {
   default     = ""
 }
 
-variable "lambda_apideploy_bucket_name" {
+variable "apideploy_bucket_name" {
   description = "The name of the S3 bucket for API deployment Lambda functions"
   type        = string
   default     = ""
