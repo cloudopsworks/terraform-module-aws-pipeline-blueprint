@@ -5,6 +5,42 @@
 #
 
 locals {
+  ssm_encryption_policy = var.ssm_session_manager_logs_bucket_name != "" ? [
+    {
+      name_prefix = "allow-ssm-encryption"
+      description = "Allow SSM Session Manager Encryption"
+      statements = [
+        {
+          sid = "SSMEncryptionAccess"
+          actions = [
+            "kms:Decrypt",
+            "kms:Encrypt",
+            "kms:GenerateDataKey",
+          ]
+          effect = "Allow"
+          resources = [
+            var.ssm_session_manager_kms_key_arn,
+          ]
+        },
+        {
+          sid    = "S3ReadWriteWithEncryption"
+          effect = "Allow"
+          actions = [
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:GetEncryptionConfiguration",
+            "s3:PutEncryptionConfiguration",
+          ]
+          resources = [
+            data.aws_s3_bucket.ssm_session_manager_logs_bucket[0].arn,
+            "${data.aws_s3_bucket.ssm_session_manager_logs_bucket[0].arn}/*",
+          ]
+        }
+      ]
+    },
+  ] : []
   api_gateway_policy = [
     {
       name_prefix = "api-gateway-deployer"
@@ -173,6 +209,7 @@ locals {
     local.api_gateway_policy,
     local.build_deploy_secrets_policy,
     local.database_secrets_policy,
-    local.allow_dns
+    local.allow_dns,
+    local.ssm_encryption_policy
   )
 }

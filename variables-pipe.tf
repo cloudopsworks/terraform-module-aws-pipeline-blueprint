@@ -58,6 +58,24 @@ variable "dns_manager_role_name" {
   default     = ""
 }
 
+variable "ssm_session_manager_logs_bucket_name" {
+  description = "The name of the S3 bucket for SSM Session Manager logs"
+  type        = string
+  default     = ""
+}
+
+variable "ssm_session_manager_kms_key_arn" {
+  description = "The ARN of the KMS key for SSM Session Manager encryption"
+  type        = string
+  default     = ""
+}
+
+variable "dms_enabled" {
+  description = "Flag to enable DMS (Database Migration Service) resources"
+  type        = bool
+  default     = false
+}
+
 variable "eks_cluster_name" {
   description = "The name of the EKS cluster"
   type        = string

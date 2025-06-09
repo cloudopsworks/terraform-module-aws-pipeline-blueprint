@@ -52,6 +52,11 @@ data "aws_iam_openid_connect_provider" "eks_cluster" {
   url   = data.aws_eks_cluster.eks_cluster[0].identity[0].oidc[0].issuer
 }
 
+data "aws_s3_bucket" "ssm_session_manager_logs_bucket" {
+  count  = var.ssm_session_manager_logs_bucket_name != "" ? 1 : 0
+  bucket = var.ssm_session_manager_logs_bucket_name
+}
+
 module "blueprint" {
   source               = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git//?ref=v1.0.5"
   is_hub               = var.is_hub
