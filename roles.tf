@@ -191,14 +191,14 @@ locals {
               values = [
                 "system:serviceaccount:hoopagent:hoopagent",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].client_id_list[0]}:sub"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:sub"
             },
             {
               test = "StringEquals"
               values = [
                 "sts.amazonaws.com",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].client_id_list[0]}:aud"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:aud"
             },
           ]
           principals = [
