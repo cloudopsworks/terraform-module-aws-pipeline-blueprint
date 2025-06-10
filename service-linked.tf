@@ -3,5 +3,11 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
-data "aws_region" "current" {}
-data "aws_caller_identity" "current" {}
+
+locals {
+  blueprint_service_linked_roles = [
+    for service in var.service_linked_roles : {
+      service = service
+    }
+  ]
+}
