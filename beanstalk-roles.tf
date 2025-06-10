@@ -113,6 +113,7 @@ locals {
                 "iam:AttachRolePolicy",
                 "iam:CreateInstanceProfile",
                 "iam:AddRoleToInstanceProfile",
+                "iam:ListPolicyVersions",
               ]
               effect = "Allow"
               resources = [

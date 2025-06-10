@@ -176,6 +176,7 @@ locals {
                 "iam:ListAttachedRolePolicies",
                 "iam:ListInstanceProfilesForRole",
                 "iam:ListPolicyTags",
+                "iam:ListPolicyVersions",
                 "iam:ListRolePolicies",
                 "iam:ListRoleTags",
                 "iam:ListRoles",
