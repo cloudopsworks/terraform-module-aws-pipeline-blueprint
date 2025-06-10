@@ -20,7 +20,7 @@ locals {
             "sts:TagSession",
           ]
           principals = [
-            data.aws_iam_user.terraform_user.arn,
+            var.usernames.account_id == "" ? data.aws_iam_user.terraform_user[0].arn : "arn:aws:iam::${var.usernames.account_id}:user/${var.usernames.terraform}",
           ]
           type = "AWS"
         },

@@ -20,7 +20,7 @@ locals {
             "sts:TagSession",
           ]
           principals = [
-            data.aws_iam_user.preview_pub.arn,
+            var.usernames.account_id == "" ? data.aws_iam_user.preview_pub[0].arn : "arn:aws:iam::${var.usernames.account_id}:user/${var.usernames.preview_publisher}",
           ]
           type = "AWS"
         },
@@ -72,7 +72,7 @@ locals {
             "sts:TagSession",
           ]
           principals = [
-            data.aws_iam_user.terraform_user.arn,
+            var.usernames.account_id == "" ? data.aws_iam_user.terraform_user[0].arn : "arn:aws:iam::${var.usernames.account_id}:user/${var.usernames.terraform}",
           ]
           type = "AWS"
         },
@@ -118,7 +118,7 @@ locals {
             "sts:TagSession",
           ]
           principals = [
-            data.aws_iam_user.build_publisher.arn,
+            var.usernames.account_id == "" ? data.aws_iam_user.build_publisher[0].arn : "arn:aws:iam::${var.usernames.account_id}:user/${var.usernames.build_publisher}",
           ]
           type = "AWS"
         },

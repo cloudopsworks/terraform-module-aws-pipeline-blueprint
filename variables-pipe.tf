@@ -4,22 +4,15 @@
 #            Distributed Under Apache v2.0 License
 #
 
-variable "preview_publisher_username" {
-  description = "The username of the preview publisher IAM user"
-  type        = string
-  default     = "eks-preview-publisher"
-}
-
-variable "terraform_username" {
-  description = "The username of the Terraform IAM user"
-  type        = string
-  default     = "terraform-access"
-}
-
-variable "build_username" {
-  description = "The username of the build publisher IAM user"
-  type        = string
-  default     = "build-publisher"
+variable "usernames" {
+  description = "A map of usernames for various IAM users"
+  type = object({
+    account_id        = optional(string, "")
+    preview_publisher = optional(string, "eks-preview-publisher")
+    terraform         = optional(string, "terraform-access")
+    build_publisher   = optional(string, "build-publisher")
+  })
+  default = {}
 }
 
 variable "lambda_bucket_name" {
