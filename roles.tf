@@ -179,7 +179,6 @@ locals {
                 "iam:ListRolePolicies",
                 "iam:ListRoleTags",
                 "iam:ListRoles",
-                "iam:PassRole",
                 "iam:PutRolePermissionsBoundary",
                 "iam:PutRolePolicy",
                 "iam:TagPolicy",
