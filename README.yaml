@@ -1,4 +1,4 @@
-name: Terraform Transit Gateway Module
+name: Terraform AWS Pipeline Blueprint Setup Module
 #logo: logo/logo.jpg
 
 license: "APACHE2"
@@ -8,23 +8,129 @@ copyrights:
     url: "https://cloudops.works"
     year: "2024"
 
-github_repo: cloudopsworks/terraform-module-aws-vpc-setup
+github_repo: cloudopsworks/terraform-module-aws-pipeline-blueprint
 
 description: |-
-  VPC Module for setting up transit gateway with ResourceAccessMananger support.
+  A Terraform module that provides a complete AWS CI/CD pipeline blueprint setup. This module helps create and manage AWS IAM roles and policies for Lambda functions deployment, API Gateway integration, and associated AWS services. It streamlines the process of setting up secure deployment pipelines while following AWS best practices for permissions and security.
+
 
 # Introduction to the project
-#introduction: |-
-#  This is an introduction.
+introduction: |-
+  The Terraform AWS Pipeline Blueprint Setup Module is designed to simplify the creation and management of AWS CI/CD pipelines. It focuses on establishing proper IAM roles and permissions required for deploying Lambda functions, managing API Gateway deployments, and handling various AWS service integrations.
+
+  This module is particularly useful for teams that need to:
+  - Deploy Lambda functions with proper permissions
+  - Manage API Gateway deployments
+  - Handle CloudWatch Logs configurations
+  - Set up EventBridge (CloudWatch Events) schedules
+  - Configure S3 bucket access for Lambda deployments
+  - Manage SQS trigger permissions
 
 # How to use this project
-#usage: |-
+usage: |-
+  To use this module in your Terragrunt configuration:
+
+  ```hcl
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    lambda_bucket_name     = "my-lambda-artifacts-bucket"
+    terraform_user        = "deployment-user"
+
+    # Optional parameters
+    region               = "us-west-2"
+    environment         = "production"
+    tags = {
+      Environment = "production"
+      Project     = "my-project"
+    }
+  }
+  ```
+
+  ## Required Parameters
+  - lambda_bucket_name: Name of the S3 bucket to store Lambda artifacts
+  - terraform_user: IAM user name for terraform operations
+
+  ## Optional Parameters
+  - region: AWS region (default: provider's region)
+  - environment: Environment name for resource tagging
+  - tags: Map of tags to apply to resources
 
 # Example usage
-#examples: |-
+examples: |-
+  ### Basic Example
+  ```hcl
+  # terragrunt.hcl
+  include {
+    path = find_in_parent_folders()
+  }
+
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    lambda_bucket_name = "my-company-lambda-artifacts"
+    terraform_user    = "terraform-deployer"
+    environment      = "staging"
+  }
+  ```
+
+  ### Complete Example with Tags
+  ```hcl
+  # terragrunt.hcl
+  include {
+    path = find_in_parent_folders()
+  }
+
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    lambda_bucket_name = "my-company-lambda-artifacts"
+    terraform_user    = "terraform-deployer"
+    environment      = "production"
+    region           = "us-east-1"
+    tags = {
+      Environment = "production"
+      Team        = "platform"
+      Project     = "serverless-api"
+      Terraform   = "true"
+    }
+  }
+  ```
 
 # How to get started quickly
-#quickstart: |-
+quickstart: |-
+  1. Ensure you have Terraform and Terragrunt installed
+  2. Create a new directory for your infrastructure code
+  3. Create a terragrunt.hcl file with the following content:
+     ```hcl
+     terraform {
+       source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+     }
+
+     inputs = {
+       lambda_bucket_name = "your-lambda-bucket"
+       terraform_user    = "your-terraform-user"
+     }
+     ```
+  4. Initialize Terragrunt:
+     ```bash
+     terragrunt init
+     ```
+  5. Review the planned changes:
+     ```bash
+     terragrunt plan
+     ```
+  6. Apply the configuration:
+     ```bash
+     terragrunt apply
+     ```
+  7. The module will create all necessary IAM roles and policies for your pipeline
 
 include:
   - "docs/targets.md"
