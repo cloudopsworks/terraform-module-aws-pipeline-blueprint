@@ -149,6 +149,7 @@ locals {
                 "logs:PutRetentionPolicy",
                 "logs:DeleteRetentionPolicy",
                 "logs:ListTagsLogGroup",
+                "logs:TagResource",
                 "logs:TagLogGroup",
                 "logs:UntagLogGroup",
                 "logs:ListTagsForResource",
