@@ -5,15 +5,18 @@
 #
 
 data "aws_iam_user" "preview_pub" {
-  user_name = var.preview_publisher_username
+  count     = var.usernames.account_id == "" ? 1 : 0
+  user_name = var.usernames.preview_publisher
 }
 
 data "aws_iam_user" "terraform_user" {
-  user_name = var.terraform_username
+  count     = var.usernames.account_id == "" ? 1 : 0
+  user_name = var.usernames.terraform
 }
 
 data "aws_iam_user" "build_publisher" {
-  user_name = var.build_username
+  count     = var.usernames.account_id == "" ? 1 : 0
+  user_name = var.usernames.build_publisher
 }
 
 data "aws_s3_bucket" "lambda_bucket" {
