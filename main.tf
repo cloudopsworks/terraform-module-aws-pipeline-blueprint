@@ -53,6 +53,11 @@ output "eks_data" {
   value = var.eks_cluster_name != "" ? data.aws_eks_cluster.eks_cluster[0] : null
 }
 
+output "eks_oidc_ata" {
+  value = var.eks_cluster_name != "" ? data.aws_iam_openid_connect_provider.eks_cluster[0] : null
+}
+
+
 data "aws_s3_bucket" "ssm_session_manager_logs_bucket" {
   count  = var.ssm_session_manager.logs_bucket_name != "" ? 1 : 0
   bucket = var.ssm_session_manager.logs_bucket_name
