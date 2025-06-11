@@ -49,14 +49,14 @@ locals {
               values = [
                 "system:serviceaccount:${var.argocd.namespace}:${var.argocd.server_serviceaccount_name}",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:sub"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[var.argocd.cluster_name].url}:sub"
             },
             {
               test = "StringEquals"
               values = [
                 "sts.amazonaws.com",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:aud"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[var.argocd.cluster_name].url}:aud"
             },
           ]
         },
