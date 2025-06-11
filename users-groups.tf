@@ -5,13 +5,13 @@
 #
 
 locals {
-  preview_pub_group = length(var.groups.preview_publisher.role_arns) > 0 ? [
+  preview_pub_group = length(var.groups.preview_publisher.roles) > 0 ? [
     {
       name     = var.groups.preview_publisher.name
       existing = true
       inline_policies = [
-        {
-          name = "preview-publisher-STS-allow"
+        for role_account in var.groups.preview_publisher.roles : {
+          name = "preview-publisher-STS-allow-${role_account.account_id}"
           statements = [
             {
               sid    = "AllowSTS"
@@ -20,20 +20,22 @@ locals {
                 "sts:AssumeRole",
                 "sts:TagSession"
               ]
-              resources = var.groups.preview_publisher.role_arns
+              resources = [
+                for role in role_account.role_names : "aws:arn:iam::${role_account.account_id}:role/${role}"
+              ]
             }
           ]
         }
       ]
     }
   ] : []
-  terraform_group = length(var.groups.terraform.role_arns) > 0 ? [
+  terraform_group = length(var.groups.terraform.roles) > 0 ? [
     {
       name     = var.groups.terraform.name
       existing = true
       inline_policies = [
-        {
-          name = "terraform-access-STS-allow"
+        for role_account in var.groups.terraform.roles : {
+          name = "terraform-access-STS-allow-${role_account.account_id}"
           statements = [
             {
               sid    = "AllowSTS"
@@ -42,20 +44,22 @@ locals {
                 "sts:AssumeRole",
                 "sts:TagSession"
               ]
-              resources = var.groups.terraform.role_arns
+              resources = [
+                for role in role_account.role_names : "aws:arn:iam::${role_account.account_id}:role/${role}"
+              ]
             }
           ]
         }
       ]
     }
   ] : []
-  build_group = length(var.groups.build_publisher.role_arns) > 0 ? [
+  build_group = length(var.groups.build_publisher.roles) > 0 ? [
     {
       name     = var.groups.build_publisher.name
       existing = true
       inline_policies = [
-        {
-          name = "build-publisher-STS-allow"
+        for role_account in var.groups.build_publisher.roles : {
+          name = "build-publisher-STS-allow-${role_account.account_id}"
           statements = [
             {
               sid    = "AllowSTS"
@@ -64,7 +68,9 @@ locals {
                 "sts:AssumeRole",
                 "sts:TagSession"
               ]
-              resources = var.groups.build_publisher.role_arns
+              resources = [
+                for role in role_account.role_names : "aws:arn:iam::${role_account.account_id}:role/${role}"
+              ]
             }
           ]
         }

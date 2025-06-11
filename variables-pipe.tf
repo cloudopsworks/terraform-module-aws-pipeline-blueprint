@@ -102,24 +102,33 @@ variable "groups" {
   description = "Group Settings configuration"
   type = object({
     preview_publisher = optional(object({
-      name      = string
-      role_arns = list(string)
+      name = string
+      roles = list(object({
+        account_id = string
+        role_names = list(string)
+      }))
       }), {
-      name      = "eks-preview-publisher"
-      role_arns = []
+      name  = "eks-preview-publisher"
+      roles = []
     })
     terraform = optional(object({
-      name      = string
-      role_arns = list(string)
+      name = string
+      roles = list(object({
+        account_id = string
+        role_names = list(string)
+      }))
       }), {
       name      = "terraform-access"
       role_arns = []
     })
     build_publisher = optional(object({
-      name      = string
-      role_arns = list(string)
+      name = string
+      roles = list(object({
+        account_id = string
+        role_names = list(string)
+      }))
       }), {
-      name      = "build-publisher"
+      name      = "terraform-access"
       role_arns = []
     })
   })
