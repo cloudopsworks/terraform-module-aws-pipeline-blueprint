@@ -13,7 +13,7 @@ locals {
         {
           type = "Federated"
           principals = [
-            data.aws_iam_openid_connect_provider.eks_cluster[0].arn,
+            data.aws_iam_openid_connect_provider.eks_cluster[var.argocd.cluster_name].arn,
           ]
           actions = [
             "sts:AssumeRoleWithWebIdentity",
@@ -38,7 +38,7 @@ locals {
         {
           type = "Federated"
           principals = [
-            data.aws_iam_openid_connect_provider.eks_cluster[0].arn,
+            data.aws_iam_openid_connect_provider.eks_cluster[var.argocd.cluster_name].arn,
           ]
           actions = [
             "sts:AssumeRoleWithWebIdentity",
