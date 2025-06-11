@@ -152,4 +152,9 @@ variable "groups" {
       roles = []
     })
   })
+  default = {
+    preview_publisher = {}
+    terraform         = {}
+    build_publisher   = {}
+  }
 }
