@@ -59,7 +59,7 @@ data "aws_s3_bucket" "ssm_session_manager_logs_bucket" {
 }
 
 module "blueprint" {
-  source               = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git//?ref=v1.0.7"
+  source               = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git//?ref=v1.0.9"
   is_hub               = var.is_hub
   spoke_def            = var.spoke_def
   org                  = var.org
