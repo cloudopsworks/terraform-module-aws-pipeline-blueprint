@@ -42,6 +42,7 @@ variable "argocd" {
   description = "ArgoCD configuration"
   type = object({
     namespace                      = optional(string, "argocd")
+    cluster_name                   = optional(string, "")
     controller_serviceaccount_name = optional(string, "argocd-application-controller")
     server_serviceaccount_name     = optional(string, "argocd-server")
     role_arns                      = optional(list(string), [])
