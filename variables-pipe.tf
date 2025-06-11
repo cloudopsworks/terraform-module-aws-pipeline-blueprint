@@ -76,10 +76,28 @@ variable "dms_enabled" {
   default     = false
 }
 
-variable "eks_cluster_name" {
-  description = "The name of the EKS cluster"
-  type        = string
-  default     = ""
+variable "eks" {
+  description = "The EKS cluster configuration"
+  type = object({
+    enabled = optional(bool, false)
+    clusters = optional(list(
+      object({
+        name     = string
+        excluded = optional(bool, false)
+      })
+    ), [])
+  })
+  default = {}
+}
+
+variable "hoop" {
+  description = "The Hoop configuration"
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "hoopagent")
+    serviceaccount_name = optional(string, "hoopagent")
+  })
+  default = {}
 }
 
 variable "secrets_manager_arns" {

@@ -57,7 +57,7 @@ locals {
       ]
     },
   ]
-  eks_publisher_role = var.eks_cluster_name != "" ? [
+  eks_publisher_role = var.eks.enabled ? [
     {
       name_prefix = "eks-pub-with-apigw"
       description = "EKS Main Publisher w/ApiGateway Deployment Role"
@@ -176,12 +176,16 @@ locals {
       ]
     },
   ]
-  hoopagent_role = var.eks_cluster_name != "" ? [
+  hoopagent_role = var.eks.enabled && var.hoop.enabled ? [
     {
       name_prefix = "hoopagent"
       description = "HoopAgent EKS ServiceAccount Role"
       assume_roles = [
-        {
+        for cluster in var.eks.clusters : {
+          type = "Federated"
+          principals = [
+            data.aws_iam_openid_connect_provider.eks_cluster[cluster.name].arn,
+          ]
           actions = [
             "sts:AssumeRoleWithWebIdentity",
           ]
@@ -189,23 +193,19 @@ locals {
             {
               test = "StringEquals"
               values = [
-                "system:serviceaccount:hoopagent:hoopagent",
+                "system:serviceaccount:${var.hoop.namespace}:${var.hoop.serviceaccount_name}",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:sub"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[cluster.name].url}:sub"
             },
             {
               test = "StringEquals"
               values = [
                 "sts.amazonaws.com",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:aud"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[cluster.name].url}:aud"
             },
           ]
-          principals = [
-            data.aws_iam_openid_connect_provider.eks_cluster[0].arn,
-          ]
-          type = "Federated"
-        },
+        }
       ]
       inline_policies = [
         {
