@@ -30,8 +30,9 @@ variable "apideploy_bucket_name" {
 variable "beanstalk" {
   description = "Elastic Beanstalk configuration"
   type = object({
-    bucket_name       = optional(string, "")
-    service_role_name = optional(string, "aws-elasticbeanstalk-service-role")
+    bucket_name        = optional(string, "")
+    service_role_name  = optional(string, "aws-elasticbeanstalk-service-role")
+    additional_buckets = optional(list(string), [])
   })
   default = {}
 }
@@ -118,8 +119,8 @@ variable "groups" {
         role_names = list(string)
       }))
       }), {
-      name      = "terraform-access"
-      role_arns = []
+      name  = "terraform-access"
+      roles = []
     })
     build_publisher = optional(object({
       name = string
@@ -128,8 +129,8 @@ variable "groups" {
         role_names = list(string)
       }))
       }), {
-      name      = "terraform-access"
-      role_arns = []
+      name  = "terraform-access"
+      roles = []
     })
   })
 }
