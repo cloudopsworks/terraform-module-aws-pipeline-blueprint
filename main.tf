@@ -40,13 +40,17 @@ data "aws_iam_role" "beanstalk_service_role" {
 }
 
 data "aws_eks_cluster" "eks_cluster" {
-  count = var.eks_cluster_name != "" ? 1 : 0
-  name  = var.eks_cluster_name
+  for_each = {
+    for cluster in var.eks.clusters : cluster.name => cluster
+  }
+  name = each.value.name
 }
 
 data "aws_iam_openid_connect_provider" "eks_cluster" {
-  count = var.eks_cluster_name != "" ? 1 : 0
-  url   = data.aws_eks_cluster.eks_cluster[0].identity[0].oidc[0].issuer
+  for_each = {
+    for cluster in var.eks.clusters : cluster.name => cluster
+  }
+  url = data.aws_eks_cluster.eks_cluster[each.key].identity[0].oidc[0].issuer
 }
 
 data "aws_s3_bucket" "ssm_session_manager_logs_bucket" {
