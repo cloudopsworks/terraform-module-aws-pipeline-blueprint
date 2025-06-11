@@ -227,6 +227,7 @@ locals {
     local.build_deploy_secrets_policy,
     local.database_secrets_policy,
     local.allow_dns,
+    local.allow_dns_hub,
     local.ssm_encryption_policy
   )
 }
