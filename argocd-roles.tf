@@ -5,12 +5,16 @@
 #
 
 locals {
-  argocd_management_role_hub = length(var.argocd.role_arns) > 0 && var.is_hub ? [
+  argocd_management_role_hub = var.eks.enabled && var.is_hub ? [
     {
       name_prefix = "argocd"
       description = "ArgoCD Management Role"
       assume_roles = [
         {
+          type = "Federated"
+          principals = [
+            data.aws_iam_openid_connect_provider.eks_cluster[0].arn,
+          ]
           actions = [
             "sts:AssumeRoleWithWebIdentity",
           ]
@@ -20,22 +24,22 @@ locals {
               values = [
                 "system:serviceaccount:${var.argocd.namespace}:${var.argocd.controller_serviceaccount_name}",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:sub"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[var.argocd.cluster_name].url}:sub"
             },
             {
               test = "StringEquals"
               values = [
                 "sts.amazonaws.com",
               ]
-              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:aud"
+              variable = "${data.aws_iam_openid_connect_provider.eks_cluster[var.argocd.cluster_name].url}:aud"
             },
           ]
+        },
+        {
+          type = "Federated"
           principals = [
             data.aws_iam_openid_connect_provider.eks_cluster[0].arn,
           ]
-          type = "Federated"
-        },
-        {
           actions = [
             "sts:AssumeRoleWithWebIdentity",
           ]
@@ -55,10 +59,6 @@ locals {
               variable = "${data.aws_iam_openid_connect_provider.eks_cluster[0].url}:aud"
             },
           ]
-          principals = [
-            data.aws_iam_openid_connect_provider.eks_cluster[0].arn,
-          ]
-          type = "Federated"
         },
       ]
       inline_policies = [
