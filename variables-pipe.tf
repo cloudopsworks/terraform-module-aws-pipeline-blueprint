@@ -30,9 +30,10 @@ variable "apideploy_bucket_name" {
 variable "beanstalk" {
   description = "Elastic Beanstalk configuration"
   type = object({
-    bucket_name        = optional(string, "")
-    service_role_name  = optional(string, "aws-elasticbeanstalk-service-role")
-    additional_buckets = optional(list(string), [])
+    bucket_name           = optional(string, "")
+    service_role_name     = optional(string, "aws-elasticbeanstalk-service-role")
+    additional_buckets    = optional(list(string), [])
+    additional_pass_roles = optional(list(string), [])
   })
   default = {}
 }
