@@ -131,9 +131,11 @@ locals {
                 "iam:PassRole",
               ]
               effect = "Allow"
-              resources = [
+              resources = concat([
                 data.aws_iam_role.beanstalk_service_role[0].arn,
-              ]
+                ], [
+                for role_name in var.beanstalk.additional_pass_roles : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${role_name}"
+              ])
               sid = "PassRole"
             },
           ]
