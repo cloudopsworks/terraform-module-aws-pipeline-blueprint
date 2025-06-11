@@ -85,10 +85,15 @@ locals {
                 "s3:UntagResource",
               ]
               effect = "Allow"
-              resources = [
+              resources = concat([
                 data.aws_s3_bucket.beanstalk_bucket[0].arn,
                 "${data.aws_s3_bucket.beanstalk_bucket[0].arn}/*",
-              ]
+                ], flatten([
+                  for bucket_name in var.beanstalk.additional_buckets : [
+                    "arn:aws:s3:::${bucket_name}",
+                    "arn:aws:s3:::${bucket_name}/*",
+                  ]
+              ]))
               sid = "S3Bucket"
             },
             {
