@@ -21,7 +21,7 @@ locals {
                 "sts:TagSession"
               ]
               resources = [
-                for role in role_account.role_names : "aws:arn:iam::${role_account.account_id}:role/${role}"
+                for role in role_account.role_names : "arn:aws:iam::${role_account.account_id}:role/${role}"
               ]
             }
           ]
@@ -45,7 +45,7 @@ locals {
                 "sts:TagSession"
               ]
               resources = [
-                for role in role_account.role_names : "aws:arn:iam::${role_account.account_id}:role/${role}"
+                for role in role_account.role_names : "arn:aws:iam::${role_account.account_id}:role/${role}"
               ]
             }
           ]
@@ -69,7 +69,7 @@ locals {
                 "sts:TagSession"
               ]
               resources = [
-                for role in role_account.role_names : "aws:arn:iam::${role_account.account_id}:role/${role}"
+                for role in role_account.role_names : "arn:aws:iam::${role_account.account_id}:role/${role}"
               ]
             }
           ]
