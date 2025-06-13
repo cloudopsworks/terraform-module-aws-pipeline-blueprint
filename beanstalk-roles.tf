@@ -55,7 +55,15 @@ locals {
                 "elasticloadbalancing:RemoveTags",
                 "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
                 "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-              ]
+                "elasticloadbalancing:DeregisterTargets",
+                "elasticloadbalancing:RegisterTargets",
+                "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:ModifyTargetGroup",
+                "elasticloadbalancing:ModifyTargetGroupAttributes",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:CreateRule",
+                "elasticloadbalancing:ModifyRule",
+                "elasticloadbalancing:DeleteRule",              ]
               effect = "Allow"
               resources = [
                 "*",
