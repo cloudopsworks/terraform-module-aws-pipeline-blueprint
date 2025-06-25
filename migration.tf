@@ -53,3 +53,8 @@ moved {
   from = aws_iam_role_policy_attachment.policy_ref
   to   = module.blueprint.aws_iam_role_policy_attachment.policy_ref
 }
+
+moved {
+  from = aws_iam_service_linked_role.this
+  to   = module.blueprint.aws_iam_service_linked_role.this
+}
