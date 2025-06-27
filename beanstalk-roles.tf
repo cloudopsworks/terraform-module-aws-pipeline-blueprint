@@ -63,7 +63,7 @@ locals {
                 "elasticloadbalancing:DeleteTargetGroup",
                 "elasticloadbalancing:CreateRule",
                 "elasticloadbalancing:ModifyRule",
-                "elasticloadbalancing:DeleteRule",              ]
+              "elasticloadbalancing:DeleteRule", ]
               effect = "Allow"
               resources = [
                 "*",
