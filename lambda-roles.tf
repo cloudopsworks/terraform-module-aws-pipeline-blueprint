@@ -58,6 +58,11 @@ locals {
                 "logs:DeleteResourcePolicy",
                 "logs:ListTagsForResource",
                 "logs:ListTagsForLogGroup",
+                "logs:CreateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:UpdateLogDelivery"
               ]
               effect = "Allow"
               resources = [
