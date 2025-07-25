@@ -130,6 +130,9 @@ locals {
               "s3:ListBucket",
               "s3:GetObjectTagging",
               "s3:GetBucketWebsite",
+              "s3:ListBucketVersions",
+              "s3:ListObjectVersions",
+              "s3:DeleteObjectVersion",
             ]
             effect = "Allow"
             resources = [
