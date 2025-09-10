@@ -75,6 +75,8 @@ locals {
             "logs:UntagLogGroup",
             "logs:DeleteLogGroup",
             "logs:ListTagsForResource",
+            "logs:TagResource",
+            "logs:UntagResource",
           ]
           effect = "Allow"
           resources = [
