@@ -216,8 +216,8 @@ locals {
             },
             {
               actions = [
-                "dynamodb:ListTables",
-                "dynamodb:DescribeTable",
+                "dynamodb:List*",
+                "dynamodb:Describe*",
               ]
               effect = "Allow"
               resources = [
