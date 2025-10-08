@@ -11,20 +11,27 @@ copyrights:
 github_repo: cloudopsworks/terraform-module-aws-pipeline-blueprint
 
 description: |-
-  A Terraform module that provides a complete AWS CI/CD pipeline blueprint setup. This module helps create and manage AWS IAM roles and policies for Lambda functions deployment, API Gateway integration, and associated AWS services. It streamlines the process of setting up secure deployment pipelines while following AWS best practices for permissions and security.
+  A comprehensive Terraform module designed to automate the setup of AWS CI/CD pipeline blueprints. This module streamlines the deployment of secure, scalable Lambda functions with proper IAM roles and policies, API Gateway integration, CloudWatch Logs management, EventBridge schedules, S3 bucket access, and SQS trigger permissions. It follows AWS best practices for security, compliance, and infrastructure as code.
 
 
 # Introduction to the project
 introduction: |-
-  The Terraform AWS Pipeline Blueprint Setup Module is designed to simplify the creation and management of AWS CI/CD pipelines. It focuses on establishing proper IAM roles and permissions required for deploying Lambda functions, managing API Gateway deployments, and handling various AWS service integrations.
+  The Terraform AWS Pipeline Blueprint Setup Module is a robust solution for automating the deployment and management of secure AWS CI/CD pipelines. This module provides a complete blueprint for setting up the necessary IAM roles, policies, and permissions required for deploying Lambda functions with minimal configuration.
 
-  This module is particularly useful for teams that need to:
-  - Deploy Lambda functions with proper permissions
-  - Manage API Gateway deployments
-  - Handle CloudWatch Logs configurations
-  - Set up EventBridge (CloudWatch Events) schedules
-  - Configure S3 bucket access for Lambda deployments
-  - Manage SQS trigger permissions
+  Key capabilities include:
+  - Secure IAM role and policy creation for Lambda deployments
+  - API Gateway integration with proper permissions
+  - CloudWatch Logs configuration for monitoring and debugging
+  - EventBridge (CloudWatch Events) schedule management
+  - S3 bucket access configuration for Lambda artifact storage
+  - SQS trigger permission setup for event-driven architectures
+
+  This module is ideal for teams looking to:
+  - Automate secure Lambda function deployments
+  - Implement CI/CD pipelines with proper IAM governance
+  - Manage API Gateway resources in a secure manner
+  - Set up monitoring and logging for serverless applications
+  - Configure event-driven architectures with proper permissions
 
 # How to use this project
 usage: |-
@@ -50,13 +57,22 @@ usage: |-
   ```
 
   ## Required Parameters
-  - lambda_bucket_name: Name of the S3 bucket to store Lambda artifacts
-  - terraform_user: IAM user name for terraform operations
+  - lambda_bucket_name: Name of the S3 bucket to store Lambda artifacts. This bucket will be used to store Lambda deployment packages.
+  - terraform_user: IAM user name for terraform operations. This user will be granted necessary permissions to manage the pipeline resources.
 
   ## Optional Parameters
-  - region: AWS region (default: provider's region)
-  - environment: Environment name for resource tagging
-  - tags: Map of tags to apply to resources
+  - region: AWS region (default: provider's region). The AWS region where resources will be deployed.
+  - environment: Environment name for resource tagging (e.g., "staging", "production"). This helps in identifying and organizing resources.
+  - tags: Map of tags to apply to resources for better organization and cost tracking.
+
+  ## Advanced Configuration Options
+  - enable_cloudwatch_logs: Enable CloudWatch Logs for Lambda functions (default: true)
+  - enable_eventbridge_schedules: Enable EventBridge schedules (default: false)
+  - enable_sqs_triggers: Enable SQS trigger permissions (default: false)
+  - lambda_memory_size: Memory size for Lambda functions (default: 128)
+  - lambda_timeout: Timeout for Lambda functions in seconds (default: 30)
+  - api_gateway_enabled: Enable API Gateway integration (default: false)
+  - log_retention_days: Number of days to retain CloudWatch logs (default: 30)
 
 # Example usage
 examples: |-
@@ -78,7 +94,7 @@ examples: |-
   }
   ```
 
-  ### Complete Example with Tags
+  ### Complete Example with Tags and Advanced Options
   ```hcl
   # terragrunt.hcl
   include {
@@ -100,13 +116,100 @@ examples: |-
       Project     = "serverless-api"
       Terraform   = "true"
     }
+
+    # Advanced options
+    enable_cloudwatch_logs = true
+    enable_eventbridge_schedules = true
+    enable_sqs_triggers = false
+    lambda_memory_size = 256
+    lambda_timeout = 60
+    api_gateway_enabled = true
+    log_retention_days = 90
+  }
+  ```
+
+  ### Example with API Gateway and EventBridge
+  ```hcl
+  # terragrunt.hcl
+  include {
+    path = find_in_parent_folders()
+  }
+
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    lambda_bucket_name = "my-company-lambda-artifacts"
+    terraform_user    = "terraform-deployer"
+    environment      = "staging"
+    region           = "eu-west-1"
+
+    # Enable API Gateway and EventBridge features
+    api_gateway_enabled = true
+    enable_eventbridge_schedules = true
+
+    tags = {
+      Environment = "staging"
+      Team        = "backend"
+      Project     = "api-pipeline"
+    }
+  }
+  ```
+
+  ### Example with SQS Triggers and Custom Memory Settings
+  ```hcl
+  # terragrunt.hcl
+  include {
+    path = find_in_parent_folders()
+  }
+
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    lambda_bucket_name = "my-company-lambda-artifacts"
+    terraform_user    = "terraform-deployer"
+    environment      = "development"
+
+    # Enable SQS triggers and set custom Lambda settings
+    enable_sqs_triggers = true
+    lambda_memory_size = 512
+    lambda_timeout = 120
+
+    tags = {
+      Environment = "development"
+      Team        = "devops"
+      Project     = "queue-processing"
+    }
+  }
+  ```
+
+  ### Example with Minimal Configuration
+  ```hcl
+  # terragrunt.hcl
+  include {
+    path = find_in_parent_folders()
+  }
+
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    lambda_bucket_name = "my-lambda-artifacts"
+    terraform_user    = "terraform-user"
   }
   ```
 
 # How to get started quickly
 quickstart: |-
-  1. Ensure you have Terraform and Terragrunt installed
-  2. Create a new directory for your infrastructure code
+  1. Ensure you have Terraform (v1.0+) and Terragrunt (v0.38+) installed
+  2. Create a new directory for your infrastructure code:
+     ```bash
+     mkdir my-aws-pipeline && cd my-aws-pipeline
+     ```
   3. Create a terragrunt.hcl file with the following content:
      ```hcl
      terraform {
@@ -130,7 +233,11 @@ quickstart: |-
      ```bash
      terragrunt apply
      ```
-  7. The module will create all necessary IAM roles and policies for your pipeline
+  7. The module will create all necessary IAM roles, policies, and permissions for your AWS CI/CD pipeline
+  8. Verify that the resources were created successfully by checking:
+     - IAM roles and policies in the AWS Console
+     - S3 bucket for Lambda artifacts (if created)
+     - CloudWatch Logs groups (if enabled)
 
 include:
   - "docs/targets.md"

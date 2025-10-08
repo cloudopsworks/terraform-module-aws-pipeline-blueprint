@@ -38,7 +38,11 @@ locals {
               ]
               effect = "Allow"
               resources = [
-                "*",
+                "arn:aws:lambda:*:*:function:*",
+                "arn:aws:lambda:*:*:layer:*",
+                "arn:aws:lambda:*:*:alias:*",
+                "arn:aws:lambda:*:*:event-source-mapping:*",
+                "arn:aws:lambda:*:*:code-signing-config:*",
               ]
               sid = "LambdaDeployment"
             },
@@ -66,7 +70,7 @@ locals {
               ]
               effect = "Allow"
               resources = [
-                "*",
+                "arn:aws:logs:*:*:*",
               ]
               sid = "CRUDCloudWatchLogs"
             },
@@ -209,6 +213,17 @@ locals {
                 "arn:aws:sqs:*:*:*",
               ]
               sid = "SQSTrigger"
+            },
+            {
+              actions = [
+                "dynamodb:ListTables",
+                "dynamodb:DescribeTable",
+              ]
+              effect = "Allow"
+              resources = [
+                "arn:aws:dynamodb:*:*:table/*",
+              ]
+              sid = "DynamoDBTrigger"
             },
           ]
         },
