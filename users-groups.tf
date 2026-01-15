@@ -89,7 +89,7 @@ locals {
 
 module "blueprint-users" {
   count      = var.is_hub ? 1 : 0
-  source     = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-user-groups.git//?ref=v1.2.1"
+  source     = "git::https://github.com/cloudopsworks/terraform-module-aws-iam-user-groups.git//?ref=v1.3.1"
   is_hub     = var.is_hub
   org        = var.org
   groups     = local.groups
