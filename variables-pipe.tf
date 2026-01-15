@@ -158,3 +158,9 @@ variable "groups" {
   })
   default = {}
 }
+
+variable "device_farm_enabled" {
+  description = "Flag to enable Device Farm resources"
+  type        = bool
+  default     = false
+}
