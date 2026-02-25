@@ -131,6 +131,7 @@ locals {
               "s3:DeleteObject",
               "s3:ListBucket",
               "s3:GetObjectTagging",
+              "s3:PutObjectTagging",
               "s3:GetBucketWebsite",
               "s3:ListBucketVersions",
               "s3:ListObjectVersions",
