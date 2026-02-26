@@ -15,7 +15,7 @@
 
 
 
-A comprehensive Terraform module designed to automate the setup of AWS CI/CD pipeline blueprints. This module streamlines the deployment of secure, scalable Lambda functions with proper IAM roles and policies, API Gateway integration, CloudWatch Logs management, EventBridge schedules, S3 bucket access, and SQS trigger permissions. It follows AWS best practices for security, compliance, and infrastructure as code.
+A comprehensive Terraform module designed to automate the setup of AWS pipeline blueprints. This module streamlines the creation of IAM roles, policies, and users for various services including EKS, ArgoCD, Elastic Beanstalk, Lambda, DNS Manager, and SSM Session Manager, following security best practices and organizational standards.
 
 
 ---
@@ -50,22 +50,15 @@ We have [*lots of terraform modules*][terraform_modules] that are Open Source an
 
 ## Introduction
 
-The Terraform AWS Pipeline Blueprint Setup Module is a robust solution for automating the deployment and management of secure AWS CI/CD pipelines. This module provides a complete blueprint for setting up the necessary IAM roles, policies, and permissions required for deploying Lambda functions with minimal configuration.
+The Terraform AWS Pipeline Blueprint Setup Module provides a standardized way to deploy infrastructure roles and permissions across AWS accounts. It supports both Hub and Spoke configurations, allowing for centralized management of deployment identities and localized resource permissions.
 
 Key capabilities include:
-- Secure IAM role and policy creation for Lambda deployments
-- API Gateway integration with proper permissions
-- CloudWatch Logs configuration for monitoring and debugging
-- EventBridge (CloudWatch Events) schedule management
-- S3 bucket access configuration for Lambda artifact storage
-- SQS trigger permission setup for event-driven architectures
-
-This module is ideal for teams looking to:
-- Automate secure Lambda function deployments
-- Implement CI/CD pipelines with proper IAM governance
-- Manage API Gateway resources in a secure manner
-- Set up monitoring and logging for serverless applications
-- Configure event-driven architectures with proper permissions
+- Hub and Spoke architecture support
+- IAM role and group management for CI/CD publishers (Preview, Build, Terraform)
+- Integration with ArgoCD and EKS for Kubernetes deployments
+- Support for Elastic Beanstalk and Lambda application environments
+- DNS Management and SSM Session Manager security configurations
+- Database Migration Service (DMS) and Device Farm role setup
 
 ## Usage
 
@@ -74,88 +67,112 @@ This module is ideal for teams looking to:
 Instead pin to the release tag (e.g. `?ref=vX.Y.Z`) of one of our [latest releases](https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint/releases).
 
 
-To use this module in your Terragrunt configuration:
+To use this module in your Terragrunt configuration, define the inputs in your `terragrunt.hcl` file.
 
+### Terragrunt Usage Example
 ```hcl
 terraform {
   source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
 }
 
 inputs = {
-  lambda_bucket_name     = "my-lambda-artifacts-bucket"
-  terraform_user        = "deployment-user"
-
-  # Optional parameters
-  region               = "us-west-2"
-  environment         = "production"
-  tags = {
-    Environment = "production"
-    Project     = "my-project"
+  org = {
+    organization_name = "my-org"         # (Required) Organization name
+    organization_unit = "platform"       # (Required) Organization unit
+    environment_type  = "prod"           # (Required) Environment type (prod, nonprod, sandbox)
+    environment_name  = "production"     # (Required) Environment name
   }
+  is_hub    = true                       # (Optional) Whether this is a HUB account. Default: false
+  spoke_def = "001"                      # (Optional) Spoke ID. Default: "001"
+  
+  # Add other configurations as needed
 }
 ```
 
-## Required Parameters
-- lambda_bucket_name: Name of the S3 bucket to store Lambda artifacts. This bucket will be used to store Lambda deployment packages.
-- terraform_user: IAM user name for terraform operations. This user will be granted necessary permissions to manage the pipeline resources.
+### Variables Documentation
+Below is the full documentation for the variables in YAML format:
 
-## Optional Parameters
-- region: AWS region (default: provider's region). The AWS region where resources will be deployed.
-- environment: Environment name for resource tagging (e.g., "staging", "production"). This helps in identifying and organizing resources.
-- tags: Map of tags to apply to resources for better organization and cost tracking.
-
-## Advanced Configuration Options
-- enable_cloudwatch_logs: Enable CloudWatch Logs for Lambda functions (default: true)
-- enable_eventbridge_schedules: Enable EventBridge schedules (default: false)
-- enable_sqs_triggers: Enable SQS trigger permissions (default: false)
-- lambda_memory_size: Memory size for Lambda functions (default: 128)
-- lambda_timeout: Timeout for Lambda functions in seconds (default: 30)
-- api_gateway_enabled: Enable API Gateway integration (default: false)
-- log_retention_days: Number of days to retain CloudWatch logs (default: 30)
+```yaml
+is_hub: false                      # (Optional) Is this a hub or spoke configuration? Default: false
+spoke_def: "001"                   # (Optional) Spoke ID Number, must be a 3 digit number. Default: "001"
+org:                               # (Required) Organization details.
+  organization_name: "my-org"      # (Required) Organization name.
+  organization_unit: "my-unit"     # (Required) Organization unit.
+  environment_type: "prod"         # (Required) Environment type (e.g. prod, staging).
+  environment_name: "production"   # (Required) Environment name.
+extra_tags: {}                     # (Optional) Extra tags to add to the resources. Default: {}
+usernames:
+  account_id: ""                   # (Optional) The AWS account ID. Default: ""
+  preview_publisher: "eks-preview-publisher" # (Optional) The username for the preview publisher. Default: "eks-preview-publisher"
+  terraform: "terraform-access"    # (Optional) The username for Terraform access. Default: "terraform-access"
+  build_publisher: "build-publisher" # (Optional) The username for the build publisher. Default: "build-publisher"
+lambda_bucket_name: ""             # (Optional) The name of the S3 bucket for Lambda functions. Default: ""
+apideploy_bucket_name: ""          # (Optional) The name of the S3 bucket for API deployment Lambda functions. Default: ""
+beanstalk:
+  bucket_name: ""                  # (Optional) Elastic Beanstalk bucket name. Default: ""
+  service_role_name: "aws-elasticbeanstalk-service-role" # (Optional) Elastic Beanstalk service role name. Default: "aws-elasticbeanstalk-service-role"
+  additional_buckets: []           # (Optional) List of additional S3 buckets for Beanstalk. Default: []
+  additional_pass_roles: []        # (Optional) List of additional IAM roles to pass to Beanstalk. Default: []
+argocd:
+  namespace: "argocd"              # (Optional) ArgoCD namespace. Default: "argocd"
+  cluster_name: ""                 # (Optional) ArgoCD cluster name. Default: ""
+  controller_serviceaccount_name: "argocd-application-controller" # (Optional) ArgoCD controller service account name. Default: "argocd-application-controller"
+  server_serviceaccount_name: "argocd-server" # (Optional) ArgoCD server service account name. Default: "argocd-server"
+  role_arns: []                    # (Optional) List of role ARNs for ArgoCD. Default: []
+dns_manager:
+  enabled: false                   # (Optional) Enable DNS Manager. Default: false
+  role_arns: []                    # (Optional) List of role ARNs for DNS Manager. Default: []
+ssm_session_manager:
+  logs_bucket_name: ""             # (Optional) S3 bucket name for SSM Session Manager logs. Default: ""
+  kms_key_arn: ""                  # (Optional) KMS key ARN for SSM Session Manager. Default: ""
+dms_enabled: false                 # (Optional) Flag to enable DMS (Database Migration Service) resources. Default: false
+eks:
+  enabled: false                   # (Optional) Enable EKS cluster configuration. Default: false
+  clusters:                        # (Optional) List of EKS clusters configuration. Default: []
+    - name: "my-cluster"           # (Required) EKS cluster name.
+      excluded: false              # (Optional) Exclude this cluster. Default: false
+hoop:
+  enabled: false                   # (Optional) Enable Hoop configuration. Default: false
+  namespace: "hoopagent"           # (Optional) Hoop namespace. Default: "hoopagent"
+  serviceaccount_name: "hoopagent" # (Optional) Hoop service account name. Default: "hoopagent"
+secrets_manager_arns: []           # (Optional) A list of ARNs for Secrets Manager secrets. Default: []
+lambda_pass_role_arns: []          # (Optional) A list of ARNs for Lambda pass roles. Default: []
+service_linked_roles: []           # (Optional) A list of service-linked roles to create. Default: []
+groups:
+  preview_publisher:               # (Optional) Preview publisher group settings.
+    name: "eks-preview-publisher"  # (Required) Group name.
+    roles:                         # (Required) List of roles for the group.
+      - account_id: "123456789012" # (Required) AWS Account ID.
+        role_names: ["role1"]      # (Required) List of role names.
+  terraform:                       # (Optional) Terraform access group settings.
+    name: "terraform-access"       # (Required) Group name.
+    roles:                         # (Required) List of roles for the group.
+      - account_id: "123456789012" # (Required) AWS Account ID.
+        role_names: ["role1"]      # (Required) List of role names.
+  build_publisher:                 # (Optional) Build publisher group settings.
+    name: "terraform-access"       # (Required) Group name.
+    roles:                         # (Required) List of roles for the group.
+      - account_id: "123456789012" # (Required) AWS Account ID.
+        role_names: ["role1"]      # (Required) List of role names.
+device_farm_enabled: false         # (Optional) Flag to enable Device Farm resources. Default: false
+```
 
 ## Quick Start
 
-1. Ensure you have Terraform (v1.0+) and Terragrunt (v0.38+) installed
-2. Create a new directory for your infrastructure code:
-   ```bash
-   mkdir my-aws-pipeline && cd my-aws-pipeline
-   ```
-3. Create a terragrunt.hcl file with the following content:
-   ```hcl
-   terraform {
-     source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
-   }
-
-   inputs = {
-     lambda_bucket_name = "your-lambda-bucket"
-     terraform_user    = "your-terraform-user"
-   }
-   ```
-4. Initialize Terragrunt:
-   ```bash
-   terragrunt init
-   ```
-5. Review the planned changes:
-   ```bash
-   terragrunt plan
-   ```
-6. Apply the configuration:
-   ```bash
-   terragrunt apply
-   ```
-7. The module will create all necessary IAM roles, policies, and permissions for your AWS CI/CD pipeline
-8. Verify that the resources were created successfully by checking:
-   - IAM roles and policies in the AWS Console
-   - S3 bucket for Lambda artifacts (if created)
-   - CloudWatch Logs groups (if enabled)
+1. Ensure you have Terraform (v1.3+) and Terragrunt (v0.38+) installed.
+2. Create a `terragrunt.hcl` file in your environment directory.
+3. Configure the `org` variable and any service-specific variables (EKS, ArgoCD, Beanstalk, etc.).
+4. Run `terragrunt init` to initialize the module.
+5. Run `terragrunt plan` to review the infrastructure changes.
+6. Run `terragrunt apply` to deploy the blueprint.
 
 
 ## Examples
 
-### Basic Example
+### HUB Account Setup
 ```hcl
 # terragrunt.hcl
-include {
+include "root" {
   path = find_in_parent_folders()
 }
 
@@ -164,79 +181,34 @@ terraform {
 }
 
 inputs = {
-  lambda_bucket_name = "my-company-lambda-artifacts"
-  terraform_user    = "terraform-deployer"
-  environment      = "staging"
-}
-```
-
-### Complete Example with Tags and Advanced Options
-```hcl
-# terragrunt.hcl
-include {
-  path = find_in_parent_folders()
-}
-
-terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
-}
-
-inputs = {
-  lambda_bucket_name = "my-company-lambda-artifacts"
-  terraform_user    = "terraform-deployer"
-  environment      = "production"
-  region           = "us-east-1"
-  tags = {
-    Environment = "production"
-    Team        = "platform"
-    Project     = "serverless-api"
-    Terraform   = "true"
+  is_hub = true
+  org = {
+    organization_name = "cloudopsworks"
+    organization_unit = "platform"
+    environment_type  = "prod"
+    environment_name  = "production"
   }
-
-  # Advanced options
-  enable_cloudwatch_logs = true
-  enable_eventbridge_schedules = true
-  enable_sqs_triggers = false
-  lambda_memory_size = 256
-  lambda_timeout = 60
-  api_gateway_enabled = true
-  log_retention_days = 90
-}
-```
-
-### Example with API Gateway and EventBridge
-```hcl
-# terragrunt.hcl
-include {
-  path = find_in_parent_folders()
-}
-
-terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
-}
-
-inputs = {
-  lambda_bucket_name = "my-company-lambda-artifacts"
-  terraform_user    = "terraform-deployer"
-  environment      = "staging"
-  region           = "eu-west-1"
-
-  # Enable API Gateway and EventBridge features
-  api_gateway_enabled = true
-  enable_eventbridge_schedules = true
-
-  tags = {
-    Environment = "staging"
-    Team        = "backend"
-    Project     = "api-pipeline"
+  usernames = {
+    account_id = "123456789012"
+  }
+  groups = {
+    terraform = {
+      name = "terraform-access"
+      roles = [
+        {
+          account_id = "123456789012"
+          role_names = ["AdministratorAccess"]
+        }
+      ]
+    }
   }
 }
 ```
 
-### Example with SQS Triggers and Custom Memory Settings
+### Spoke Account Setup with EKS and ArgoCD
 ```hcl
 # terragrunt.hcl
-include {
+include "root" {
   path = find_in_parent_folders()
 }
 
@@ -245,37 +217,27 @@ terraform {
 }
 
 inputs = {
-  lambda_bucket_name = "my-company-lambda-artifacts"
-  terraform_user    = "terraform-deployer"
-  environment      = "development"
-
-  # Enable SQS triggers and set custom Lambda settings
-  enable_sqs_triggers = true
-  lambda_memory_size = 512
-  lambda_timeout = 120
-
-  tags = {
-    Environment = "development"
-    Team        = "devops"
-    Project     = "queue-processing"
+  is_hub    = false
+  spoke_def = "002"
+  org = {
+    organization_name = "cloudopsworks"
+    organization_unit = "engineering"
+    environment_type  = "nonprod"
+    environment_name  = "staging"
   }
-}
-```
-
-### Example with Minimal Configuration
-```hcl
-# terragrunt.hcl
-include {
-  path = find_in_parent_folders()
-}
-
-terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-aws-pipeline-blueprint.git?ref=v1.0.0"
-}
-
-inputs = {
-  lambda_bucket_name = "my-lambda-artifacts"
-  terraform_user    = "terraform-user"
+  eks = {
+    enabled = true
+    clusters = [
+      {
+        name     = "staging-cluster-1"
+        excluded = false
+      }
+    ]
+  }
+  argocd = {
+    namespace    = "argocd"
+    cluster_name = "staging-cluster-1"
+  }
 }
 ```
 
@@ -288,6 +250,9 @@ Available targets:
   help                                Help screen
   help/all                            Display help for all targets
   help/short                          This help short screen
+  init/aws                            Initialize the project for a specific cloud provider: AWS
+  init/azurerm                        Initialize the project for a specific cloud provider: Azure RM
+  init/gcp                            Initialize the project for a specific cloud provider: GCP
   lint                                Lint terraform/opentofu code
   tag                                 Tag the current version
 
@@ -297,20 +262,20 @@ Available targets:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.4 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.99.1 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.4 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_blueprint"></a> [blueprint](#module\_blueprint) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git// | v1.0.9 |
-| <a name="module_blueprint-users"></a> [blueprint-users](#module\_blueprint-users) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-user-groups.git// | v1.2.1 |
+| <a name="module_blueprint"></a> [blueprint](#module\_blueprint) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git// | v1.2.0 |
+| <a name="module_blueprint-users"></a> [blueprint-users](#module\_blueprint-users) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-user-groups.git// | v1.3.1 |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 
 ## Resources
@@ -337,6 +302,7 @@ Available targets:
 | <a name="input_apideploy_bucket_name"></a> [apideploy\_bucket\_name](#input\_apideploy\_bucket\_name) | The name of the S3 bucket for API deployment Lambda functions | `string` | `""` | no |
 | <a name="input_argocd"></a> [argocd](#input\_argocd) | ArgoCD configuration | <pre>object({<br/>    namespace                      = optional(string, "argocd")<br/>    cluster_name                   = optional(string, "")<br/>    controller_serviceaccount_name = optional(string, "argocd-application-controller")<br/>    server_serviceaccount_name     = optional(string, "argocd-server")<br/>    role_arns                      = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_beanstalk"></a> [beanstalk](#input\_beanstalk) | Elastic Beanstalk configuration | <pre>object({<br/>    bucket_name           = optional(string, "")<br/>    service_role_name     = optional(string, "aws-elasticbeanstalk-service-role")<br/>    additional_buckets    = optional(list(string), [])<br/>    additional_pass_roles = optional(list(string), [])<br/>  })</pre> | `{}` | no |
+| <a name="input_device_farm_enabled"></a> [device\_farm\_enabled](#input\_device\_farm\_enabled) | Flag to enable Device Farm resources | `bool` | `false` | no |
 | <a name="input_dms_enabled"></a> [dms\_enabled](#input\_dms\_enabled) | Flag to enable DMS (Database Migration Service) resources | `bool` | `false` | no |
 | <a name="input_dns_manager"></a> [dns\_manager](#input\_dns\_manager) | DNS Manager configuration | <pre>object({<br/>    enabled   = optional(bool, false)<br/>    role_arns = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_eks"></a> [eks](#input\_eks) | The EKS cluster configuration | <pre>object({<br/>    enabled = optional(bool, false)<br/>    clusters = optional(list(<br/>      object({<br/>        name     = string<br/>        excluded = optional(bool, false)<br/>      })<br/>    ), [])<br/>  })</pre> | `{}` | no |
@@ -393,7 +359,7 @@ Please use the [issue tracker](https://github.com/cloudopsworks/terraform-module
 
 ## Copyrights
 
-Copyright © 2024-2025 [Cloud Ops Works LLC](https://cloudops.works)
+Copyright © 2024-2026 [Cloud Ops Works LLC](https://cloudops.works)
 
 
 
