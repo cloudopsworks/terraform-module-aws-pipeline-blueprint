@@ -48,6 +48,7 @@ locals {
                 "s3:GetEncryptionConfiguration",
                 "s3:GetLifecycleConfiguration",
                 "s3:GetObject",
+                "s3:GetObjectTagging",
                 "s3:GetObjectVersion",
                 "s3:GetReplicationConfiguration",
                 "s3:ListAllMyBuckets",
