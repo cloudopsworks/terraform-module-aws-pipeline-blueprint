@@ -53,6 +53,8 @@ locals {
                 "s3:GetReplicationConfiguration",
                 "s3:ListAllMyBuckets",
                 "s3:ListBucket",
+                "s3:ListBucketVersions",
+                "s3:ListObjectVersions",
                 "s3:PutBucketNotification",
                 "s3:PutObject",
                 "s3:PutObjectVersion",
