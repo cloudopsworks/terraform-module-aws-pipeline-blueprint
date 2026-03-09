@@ -124,6 +124,14 @@ variable "eks" {
   default = {}
 }
 
+variable "s3" {
+  description = "The S3 configuration"
+  type = object({
+    enabled = optional(bool, false)
+  })
+  default = {}
+}
+
 # hoop:
 #   enabled: false                   # (Optional) Enable Hoop configuration. Default: false
 #   namespace: "hoopagent"           # (Optional) Hoop namespace. Default: "hoopagent"

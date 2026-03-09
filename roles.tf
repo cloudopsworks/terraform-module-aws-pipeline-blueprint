@@ -287,6 +287,7 @@ locals {
     local.build_publisher_role,
     local.dns_manager_role,
     local.dms_role,
-    local.device_farm_publisher_role
+    local.device_farm_publisher_role,
+    local.s3_publisher_role
   )
 }
