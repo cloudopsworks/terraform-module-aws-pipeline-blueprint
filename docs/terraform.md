@@ -3,20 +3,20 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.4 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.99.1 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.4 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_blueprint"></a> [blueprint](#module\_blueprint) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git// | v1.0.9 |
-| <a name="module_blueprint-users"></a> [blueprint-users](#module\_blueprint-users) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-user-groups.git// | v1.2.1 |
+| <a name="module_blueprint"></a> [blueprint](#module\_blueprint) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-roles-policies.git// | v1.2.0 |
+| <a name="module_blueprint-users"></a> [blueprint-users](#module\_blueprint-users) | git::https://github.com/cloudopsworks/terraform-module-aws-iam-user-groups.git// | v1.3.1 |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 
 ## Resources
@@ -43,6 +43,7 @@
 | <a name="input_apideploy_bucket_name"></a> [apideploy\_bucket\_name](#input\_apideploy\_bucket\_name) | The name of the S3 bucket for API deployment Lambda functions | `string` | `""` | no |
 | <a name="input_argocd"></a> [argocd](#input\_argocd) | ArgoCD configuration | <pre>object({<br/>    namespace                      = optional(string, "argocd")<br/>    cluster_name                   = optional(string, "")<br/>    controller_serviceaccount_name = optional(string, "argocd-application-controller")<br/>    server_serviceaccount_name     = optional(string, "argocd-server")<br/>    role_arns                      = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_beanstalk"></a> [beanstalk](#input\_beanstalk) | Elastic Beanstalk configuration | <pre>object({<br/>    bucket_name           = optional(string, "")<br/>    service_role_name     = optional(string, "aws-elasticbeanstalk-service-role")<br/>    additional_buckets    = optional(list(string), [])<br/>    additional_pass_roles = optional(list(string), [])<br/>  })</pre> | `{}` | no |
+| <a name="input_device_farm_enabled"></a> [device\_farm\_enabled](#input\_device\_farm\_enabled) | Flag to enable Device Farm resources | `bool` | `false` | no |
 | <a name="input_dms_enabled"></a> [dms\_enabled](#input\_dms\_enabled) | Flag to enable DMS (Database Migration Service) resources | `bool` | `false` | no |
 | <a name="input_dns_manager"></a> [dns\_manager](#input\_dns\_manager) | DNS Manager configuration | <pre>object({<br/>    enabled   = optional(bool, false)<br/>    role_arns = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_eks"></a> [eks](#input\_eks) | The EKS cluster configuration | <pre>object({<br/>    enabled = optional(bool, false)<br/>    clusters = optional(list(<br/>      object({<br/>        name     = string<br/>        excluded = optional(bool, false)<br/>      })<br/>    ), [])<br/>  })</pre> | `{}` | no |
@@ -53,6 +54,7 @@
 | <a name="input_lambda_bucket_name"></a> [lambda\_bucket\_name](#input\_lambda\_bucket\_name) | The name of the S3 bucket for Lambda functions | `string` | `""` | no |
 | <a name="input_lambda_pass_role_arns"></a> [lambda\_pass\_role\_arns](#input\_lambda\_pass\_role\_arns) | A list of ARNs for Lambda pass roles | `list(string)` | `[]` | no |
 | <a name="input_org"></a> [org](#input\_org) | Organization details | <pre>object({<br/>    organization_name = string<br/>    organization_unit = string<br/>    environment_type  = string<br/>    environment_name  = string<br/>  })</pre> | n/a | yes |
+| <a name="input_s3"></a> [s3](#input\_s3) | The S3 configuration | <pre>object({<br/>    enabled = optional(bool, false)<br/>  })</pre> | `{}` | no |
 | <a name="input_secrets_manager_arns"></a> [secrets\_manager\_arns](#input\_secrets\_manager\_arns) | A list of ARNs for Secrets Manager secrets | `list(string)` | `[]` | no |
 | <a name="input_service_linked_roles"></a> [service\_linked\_roles](#input\_service\_linked\_roles) | A list of service-linked roles to create | `list(string)` | `[]` | no |
 | <a name="input_spoke_def"></a> [spoke\_def](#input\_spoke\_def) | Spoke ID Number, must be a 3 digit number | `string` | `"001"` | no |
